@@ -1,6 +1,8 @@
 ﻿using Azure.Identity;
 using System.Text;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
 
 partial class Program
 {
@@ -29,5 +31,15 @@ partial class Program
             sql = sql + "Column Encryption Setting=Enabled";
 
         return sql;
+    }
+
+    public static void RegisterAkvForAe(DefaultAzureCredential cred)
+    {
+        var azureKeyVaultProvider = new SqlColumnEncryptionAzureKeyVaultProvider(cred);
+        SqlConnection.RegisterColumnEncryptionKeyStoreProviders(
+            customProviders: new Dictionary<string, SqlColumnEncryptionKeyStoreProvider>()
+            {
+                { SqlColumnEncryptionAzureKeyVaultProvider.ProviderName, azureKeyVaultProvider }
+            });
     }
 }

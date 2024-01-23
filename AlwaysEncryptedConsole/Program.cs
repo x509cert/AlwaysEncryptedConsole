@@ -11,13 +11,15 @@ partial class Program
                 new TokenRequestContext(
                     new[] { "https://database.windows.net/.default" })).Token;
 
-        var connectionString = GetSQLConnectionString(credential, useAE: false);
+        var connectionString = GetSQLConnectionString(credential, useAE: true);
         SqlConnection conn = new(connectionString)
         {
             AccessToken = oauth2TokenSql
         };
 
         conn.Open();
+
+        RegisterAkvForAe(credential);
 
         SqlCommand sqlCommand = new("SELECT Top 10 SSN, Salary, LastName, FirstName FROM Employees", conn);
         using var sqlDataReader = sqlCommand.ExecuteReader();
