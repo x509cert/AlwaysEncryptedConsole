@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
 
 partial class Program
 {
+    // Helper function to dump binary data
     public static string ByteArrayToHexString(byte[] byteArray, int max)
     {
         StringBuilder hex = new StringBuilder(byteArray.Length * 2);
@@ -28,17 +29,17 @@ partial class Program
         var sql = sqlConn.Value.Value;
 
         if (useAE)
-            sql = sql + "Column Encryption Setting=Enabled";
+            sql = sql + "Column Encryption Setting=Enabled;Attestation Protocol=None;";
 
         return sql;
     }
 
+    // We need to register the use of AKV for AE
     public static void RegisterAkvForAe(DefaultAzureCredential cred)
     {
         var azureKeyVaultProvider = new SqlColumnEncryptionAzureKeyVaultProvider(cred);
         SqlConnection.RegisterColumnEncryptionKeyStoreProviders(
-            customProviders: new Dictionary<string, SqlColumnEncryptionKeyStoreProvider>()
-            {
+            customProviders: new Dictionary<string, SqlColumnEncryptionKeyStoreProvider>() {
                 { SqlColumnEncryptionAzureKeyVaultProvider.ProviderName, azureKeyVaultProvider }
             });
     }
