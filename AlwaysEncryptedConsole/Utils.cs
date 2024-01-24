@@ -10,8 +10,8 @@
 // Author: Michael Howard, Azure Data Security
 //*********************************************************
 
-using Azure.Identity;
 using System.Text;
+using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
@@ -50,10 +50,10 @@ partial class Program
     // We need to register the use of AKV for AE
     public static void RegisterAkvForAe(DefaultAzureCredential cred)
     {
-        var azureKeyVaultProvider = new SqlColumnEncryptionAzureKeyVaultProvider(cred);
+        var akvAeProvider = new SqlColumnEncryptionAzureKeyVaultProvider(cred);
         SqlConnection.RegisterColumnEncryptionKeyStoreProviders(
             customProviders: new Dictionary<string, SqlColumnEncryptionKeyStoreProvider>() {
-                { SqlColumnEncryptionAzureKeyVaultProvider.ProviderName, azureKeyVaultProvider }
+                { SqlColumnEncryptionAzureKeyVaultProvider.ProviderName, akvAeProvider }
             });
     }
 }

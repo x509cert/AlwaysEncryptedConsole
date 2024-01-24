@@ -19,11 +19,12 @@ partial class Program
 {
     static void Main()
     {
+        // flip this to true or false to use or not use AE
         bool useAlwaysEncrypted = true;
 
         Console.WriteLine($"Starting... using Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
-        // login to Azure
+        // login to Azure and get token to Azure SQL DB OAuth2 token
         Console.WriteLine("Connecting to Azure");
         var credential = new DefaultAzureCredential();
         var oauth2TokenSql = credential.GetToken(
@@ -35,6 +36,8 @@ partial class Program
         var connectionString = GetSQLConnectionString(credential, useAE: useAlwaysEncrypted);
 
         Console.WriteLine("Connecting to Azure SQL DB");
+
+        // Connect to Azure SQL DB using EntraID AuthN rather than Windows or SQL AuthN
         SqlConnection conn = new(connectionString) {
             AccessToken = oauth2TokenSql
         };
@@ -79,7 +82,14 @@ partial class Program
         Console.WriteLine("Performing Query");
         using var sqlDataReader = sqlCommand.ExecuteReader();
 
+        // get column headers
         Console.WriteLine("Fetching Data");
+        for (int i = 0; i < sqlDataReader.FieldCount; i++)
+            Console.Write(sqlDataReader.GetName(i) + ", ");
+
+        Console.WriteLine();
+
+        // get data
         while (sqlDataReader.Read())
         {
             for (int i = 0; i < sqlDataReader.FieldCount; i++)
@@ -91,7 +101,7 @@ partial class Program
                 if (type == typeof(byte[]))
                     value = ByteArrayToHexString(value as byte[], 16);
 
-                Console.Write(value + "\t");
+                Console.Write(value + ", ");
             }
             Console.WriteLine();
         }
