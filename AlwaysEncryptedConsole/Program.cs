@@ -19,16 +19,22 @@ partial class Program
 {
     static void Main()
     {
-        bool useAlwaysEncrypted = false;
+        bool useAlwaysEncrypted = true;
+
+        Console.WriteLine($"Starting... using Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
         // login to Azure
+        Console.WriteLine("Connecting to Azure");
         var credential = new DefaultAzureCredential();
         var oauth2TokenSql = credential.GetToken(
                 new TokenRequestContext(
                     ["https://database.windows.net/.default"])).Token;
 
-        // login to Azure SQL
+        // login to AKV and then Azure SQL
+        Console.WriteLine("Connecting to Azure Key Vault");
         var connectionString = GetSQLConnectionString(credential, useAE: useAlwaysEncrypted);
+
+        Console.WriteLine("Connecting to Azure SQL DB");
         SqlConnection conn = new(connectionString) {
             AccessToken = oauth2TokenSql
         };
@@ -37,6 +43,7 @@ partial class Program
         // from here on is real database work
         SqlCommand sqlCommand;
 
+        Console.WriteLine("Building Query");
         if (useAlwaysEncrypted == false)
         {
             string query =
@@ -69,7 +76,10 @@ partial class Program
         }
 
         // now read the data
+        Console.WriteLine("Performing Query");
         using var sqlDataReader = sqlCommand.ExecuteReader();
+
+        Console.WriteLine("Fetching Data");
         while (sqlDataReader.Read())
         {
             for (int i = 0; i < sqlDataReader.FieldCount; i++)
