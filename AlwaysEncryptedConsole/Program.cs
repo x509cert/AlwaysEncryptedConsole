@@ -89,11 +89,8 @@ partial class Program
             sqlCommand.CommandText = query;
 
             // we MUST use parameters
-            var minSalaryParam = sqlCommand.CreateParameter();
-            minSalaryParam.ParameterName = @"@MinSalary";
-            minSalaryParam.DbType = DbType.Currency;
+            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money);
             minSalaryParam.Value = 50_000;
-            minSalaryParam.Direction = ParameterDirection.Input;
             sqlCommand.Parameters.Add(minSalaryParam);
 
             SqlParameter ssnParam = new("@SSN", SqlDbType.Char);
@@ -110,7 +107,7 @@ partial class Program
         try
         {
             data = sqlCommand.ExecuteReader();
-        } 
+        }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
