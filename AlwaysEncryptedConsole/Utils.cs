@@ -30,16 +30,12 @@ partial class Program
         return hex.ToString()[..max];
     }
 
-    // Get SQL Connection String from env var
-    private static string? GetSQLConnectionStringFromEnv()
-        => Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process);
 
     // Build SQL Connection String 
     public static string GetSQLConnectionString(bool useAE = true)
     {
-        string? sqlConn = GetSQLConnectionStringFromEnv();
-        if (sqlConn is null)
-            throw new ArgumentException($"Missing environment variable, {_EnvVar}");
+        string? sqlConn = Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process) 
+                          ?? throw new ArgumentException($"Missing environment variable, {_EnvVar}");
 
         // add AE settings if needed
         if (useAE)
