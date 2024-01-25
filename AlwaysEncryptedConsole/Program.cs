@@ -11,9 +11,11 @@
 //*********************************************************
 
 using Azure.Core;
+using Azure.Core.Diagnostics;
 using Azure.Identity;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Diagnostics;
 
 partial class Program
 {
@@ -26,10 +28,28 @@ partial class Program
 
         // login to Azure and get token to Azure SQL DB OAuth2 token
         Console.WriteLine("Connecting to Azure");
-        var credential = new DefaultAzureCredential();
-        var oauth2TokenSql = credential.GetToken(
-                new TokenRequestContext(
-                    ["https://database.windows.net/.default"])).Token;
+
+        // Setup a listener to monitor logged events.
+        // This is in case of MSAL errors, you can see what happened
+        // Sometimes DefaultAzureCredential fails, learn more at:
+        // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/identity/Azure.Identity/TROUBLESHOOTING.md#troubleshoot-defaultazurecredential-authentication-issues
+        //using AzureEventSourceListener listener = AzureEventSourceListener.CreateConsoleLogger();
+
+        DefaultAzureCredential credential;
+        string oauth2TokenSql;
+
+        try
+        {
+            credential = new DefaultAzureCredential();
+            oauth2TokenSql = credential.GetToken(
+                    new TokenRequestContext(
+                        ["https://database.windows.net/.default"])).Token;
+        } 
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return;
+        }
 
         // login to AKV and then Azure SQL
         Console.WriteLine("Connecting to Azure Key Vault");
@@ -62,7 +82,7 @@ partial class Program
 
             // query to find minimum salary with specifical SSN
             string query =
-                "SELECT Top 10 SSN, Salary, LastName, FirstName " +
+                "SELECT SSN, Salary, LastName, FirstName " +
                 "FROM Employees WHERE Salary > @MinSalary AND SSN LIKE @SSN " +
                 "ORDER by Salary DESC";
 
@@ -79,23 +99,28 @@ partial class Program
         }
 
         // now read the data
+        var stopwatch = Stopwatch.StartNew();
+
         Console.WriteLine("Performing Query");
-        using var sqlDataReader = sqlCommand.ExecuteReader();
+        using var data = sqlCommand.ExecuteReader();
+
+        stopwatch.Stop();
+        Console.WriteLine($"Query took {stopwatch.ElapsedMilliseconds}ms");
 
         // get column headers
         Console.WriteLine("Fetching Data");
-        for (int i = 0; i < sqlDataReader.FieldCount; i++)
-            Console.Write(sqlDataReader.GetName(i) + ", ");
+        for (int i = 0; i < data.FieldCount; i++)
+            Console.Write(data.GetName(i) + ", ");
 
         Console.WriteLine();
 
         // get data
-        while (sqlDataReader.Read())
+        while (data.Read())
         {
-            for (int i = 0; i < sqlDataReader.FieldCount; i++)
+            for (int i = 0; i < data.FieldCount; i++)
             {
-                var value = sqlDataReader.GetValue(i);
-                var type = sqlDataReader.GetFieldType(i);
+                var value = data.GetValue(i);
+                var type = data.GetFieldType(i);
 
                 // if the data is a byte array (ie; ciphertext) dump the hex string
                 if (type == typeof(byte[]))
