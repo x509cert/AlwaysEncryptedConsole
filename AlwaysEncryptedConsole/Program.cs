@@ -86,12 +86,16 @@ partial class Program
             sqlCommand.CommandText = query;
 
             // we MUST use parameters
-            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money);
-            minSalaryParam.Value = 50_000;
+            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money)
+            {
+                Value = 50_000
+            };
             sqlCommand.Parameters.Add(minSalaryParam);
 
-            SqlParameter ssnParam = new("@SSN", SqlDbType.Char);
-            ssnParam.Value = "6%";
+            SqlParameter ssnParam = new("@SSN", SqlDbType.Char)
+            {
+                Value = "6%"
+            };
             sqlCommand.Parameters.Add(ssnParam);
         }
 
