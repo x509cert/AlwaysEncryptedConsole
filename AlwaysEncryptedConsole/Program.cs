@@ -24,7 +24,7 @@ partial class Program
         // flip this to true or false to use or not use AE
         bool useAlwaysEncrypted = true;
 
-        Console.WriteLine($"Starting... using Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
+        Console.WriteLine($"Cold Start... Use Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
         // login to Azure and get token to Azure SQL DB OAuth2 token
         Console.WriteLine("Connecting to Azure");
