@@ -52,7 +52,7 @@ partial class Program
         }
 
         // login to AKV and then Azure SQL
-        Console.WriteLine("Connecting to Azure Key Vault");
+        Console.WriteLine("Getting SQL connection info from Azure Key Vault");
         var connectionString = GetSQLConnectionString(credential, useAE: useAlwaysEncrypted);
 
         Console.WriteLine("Connecting to Azure SQL DB");
@@ -93,7 +93,7 @@ partial class Program
             var minSalaryParam = sqlCommand.CreateParameter();
             minSalaryParam.ParameterName = @"@MinSalary";
             minSalaryParam.DbType = DbType.Currency;
-            minSalaryParam.Value = 50000;
+            minSalaryParam.Value = 50_000;
             minSalaryParam.Direction = ParameterDirection.Input;
             sqlCommand.Parameters.Add(minSalaryParam);
 
@@ -105,8 +105,18 @@ partial class Program
         // now read the data
         var stopwatch = Stopwatch.StartNew();
 
+        SqlDataReader data;
+
         Console.WriteLine("Performing Query");
-        using var data = sqlCommand.ExecuteReader();
+        try
+        {
+            data = sqlCommand.ExecuteReader();
+        } 
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return;
+        }
 
         stopwatch.Stop();
         Console.WriteLine($"Query took {stopwatch.ElapsedMilliseconds}ms");
