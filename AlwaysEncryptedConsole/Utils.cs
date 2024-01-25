@@ -17,7 +17,7 @@ using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
 
 partial class Program
 {
-    private const string _EnvVar = "AKVContosoHR";
+    private const string _EnvVar = "ConnectContosoHR";
 
     // Helper function to dump binary data
     // can truncate the output if needed
@@ -30,25 +30,22 @@ partial class Program
         return hex.ToString()[..max];
     }
 
-    // Get URI of AKV from env var
-    public static string? GetAKVConnectionString()
+    // Get SQL Connection String from env var
+    private static string? GetSQLConnectionStringFromEnv()
         => Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process);
 
-    // Get SQL Connection String from AKV
-    public static string GetSQLConnectionString(DefaultAzureCredential cred, bool useAE = true)
+    // Build SQL Connection String 
+    public static string GetSQLConnectionString(bool useAE = true)
     {
-        string? akvConn = GetAKVConnectionString();
-        if (akvConn is null)
+        string? sqlConn = GetSQLConnectionStringFromEnv();
+        if (sqlConn is null)
             throw new ArgumentException($"Missing environment variable, {_EnvVar}");
 
-        var client = new SecretClient(new Uri(akvConn), cred);
-        var sqlConn = client.GetSecret("ContosoHRSQLString");
-        var sql = sqlConn.Value.Value;
-
+        // add AE settings if needed
         if (useAE)
-            sql = sql + "Column Encryption Setting=Enabled;Attestation Protocol=None;";
+            sqlConn += ";Column Encryption Setting=Enabled;Attestation Protocol=None;";
 
-        return sql;
+        return sqlConn;
     }
 
     // We need to register the use of AKV for AE

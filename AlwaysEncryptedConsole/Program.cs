@@ -50,14 +50,11 @@ partial class Program
             return;
         }
 
-        // login to AKV and then Azure SQL
-        Console.WriteLine("Getting SQL connection info from Azure Key Vault");
-        var connectionString = GetSQLConnectionString(credential, useAE: useAlwaysEncrypted);
-
         Console.WriteLine("Connecting to Azure SQL DB");
 
         // Connect to Azure SQL DB using EntraID AuthN rather than Windows or SQL AuthN
-        SqlConnection conn = new(connectionString) {
+        var connectionString = GetSQLConnectionString(useAlwaysEncrypted);
+        using SqlConnection conn = new(connectionString) {
             AccessToken = oauth2TokenSql
         };
         conn.Open();
