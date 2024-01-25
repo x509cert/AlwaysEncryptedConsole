@@ -82,9 +82,9 @@ partial class Program
 
             // query to find minimum salary with specifical SSN
             string query =
-                "SELECT Salary, LastName " + //[SSN], [Salary], [LastName], [FirstName] " +
-                "FROM Employees WHERE Salary > @MinSalary " +  //AND SSN LIKE @SSN " +
-                "ORDER by Salary DESC";
+                "SELECT [SSN], [Salary], [LastName], [FirstName] " +
+                "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
+                "ORDER by [Salary] DESC";
 
             sqlCommand = conn.CreateCommand();
             sqlCommand.CommandText = query;
@@ -97,9 +97,9 @@ partial class Program
             minSalaryParam.Direction = ParameterDirection.Input;
             sqlCommand.Parameters.Add(minSalaryParam);
 
-            //SqlParameter ssnParam = new("@SSN", SqlDbType.Char);
-            //ssnParam.Value = "6%";
-            //sqlCommand.Parameters.Add(ssnParam);
+            SqlParameter ssnParam = new("@SSN", SqlDbType.Char);
+            ssnParam.Value = "6%";
+            sqlCommand.Parameters.Add(ssnParam);
         }
 
         // now read the data
@@ -126,9 +126,18 @@ partial class Program
                 var value = data.GetValue(i);
                 var type = data.GetFieldType(i);
 
-                // if the data is a byte array (ie; ciphertext) dump the hex string
-                if (type == typeof(byte[]))
-                    value = ByteArrayToHexString(value as byte[], 16);
+                if (value is not null)
+                {
+                    // if the data is a byte array (ie; ciphertext) dump the hex string
+                    if (type == typeof(byte[]))
+#pragma warning disable CS8604 // Possible null reference argument. There *IS* a check two lines up!
+                        value = ByteArrayToHexString(value as byte[], 16);
+#pragma warning restore CS8604 
+                } 
+                else
+                {
+                    value = "?";
+                }
 
                 Console.Write(value + ", ");
             }

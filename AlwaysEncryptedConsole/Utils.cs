@@ -18,6 +18,8 @@ using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
 
 partial class Program
 {
+    private const string _EnvVar = "AKVContosoHR";
+
     // Helper function to dump binary data
     // can truncate the output if needed
     public static string ByteArrayToHexString(byte[] byteArray, int max)
@@ -31,12 +33,15 @@ partial class Program
 
     // Get URI of AKV from env var
     public static string? GetAKVConnectionString()
-        => Environment.GetEnvironmentVariable("AKVContosoHR", EnvironmentVariableTarget.Process);
+        => Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process);
 
     // Get SQL Connection String from AKV
     public static string GetSQLConnectionString(DefaultAzureCredential cred, bool useAE = true)
     {
         string? akvConn = GetAKVConnectionString();
+        if (akvConn is null)
+            throw new ArgumentException($"Missing environment variable, {_EnvVar}");
+
         var client = new SecretClient(new Uri(akvConn), cred);
         var sqlConn = client.GetSecret("ContosoHRSQLString");
         var sql = sqlConn.Value.Value;
