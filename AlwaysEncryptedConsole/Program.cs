@@ -82,20 +82,24 @@ partial class Program
 
             // query to find minimum salary with specifical SSN
             string query =
-                "SELECT SSN, Salary, LastName, FirstName " +
-                "FROM Employees WHERE Salary > @MinSalary AND SSN LIKE @SSN " +
+                "SELECT Salary, LastName " + //[SSN], [Salary], [LastName], [FirstName] " +
+                "FROM Employees WHERE Salary > @MinSalary " +  //AND SSN LIKE @SSN " +
                 "ORDER by Salary DESC";
 
-            sqlCommand = new(query, conn);
+            sqlCommand = conn.CreateCommand();
+            sqlCommand.CommandText = query;
 
             // we MUST use parameters
-            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money);
+            var minSalaryParam = sqlCommand.CreateParameter();
+            minSalaryParam.ParameterName = @"@MinSalary";
+            minSalaryParam.DbType = DbType.Currency;
             minSalaryParam.Value = 50000;
+            minSalaryParam.Direction = ParameterDirection.Input;
             sqlCommand.Parameters.Add(minSalaryParam);
 
-            SqlParameter ssnParam = new("@SSN", SqlDbType.Char);
-            ssnParam.Value = "6%";
-            sqlCommand.Parameters.Add(ssnParam);
+            //SqlParameter ssnParam = new("@SSN", SqlDbType.Char);
+            //ssnParam.Value = "6%";
+            //sqlCommand.Parameters.Add(ssnParam);
         }
 
         // now read the data
