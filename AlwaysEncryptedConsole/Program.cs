@@ -38,94 +38,66 @@ partial class Program
         };
         conn.Open();
 
-        // from here on is real database work
-        SqlCommand sqlCommand;
-
-        Console.WriteLine("Building Query");
-        if (useAlwaysEncrypted == false)
-        {
-            string query =
-                "SELECT Top 10 SSN, Salary, LastName, FirstName " +
-                "FROM Employees";
-
-            sqlCommand = new(query, conn);
-        }
-        else
-        {
-            // register AKV for AE use by this code
+        // Register the enclave attestation URL
+        if (useAlwaysEncrypted)
             RegisterAkvForAe(credential);
 
-            // query to find minimum salary with specifical SSN
-            string query =
-                "SELECT [SSN], [Salary], [LastName], [FirstName] " +
-                "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
-                "ORDER by [Salary] DESC";
-
-            sqlCommand = conn.CreateCommand();
-            sqlCommand.CommandText = query;
-
-            // we MUST use parameters
-            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
-                Value = 50_000
-            };
-            sqlCommand.Parameters.Add(minSalaryParam);
-
-            SqlParameter ssnParam = new("@SSN", SqlDbType.Char) {
-                Value = "6%"
-            };
-            sqlCommand.Parameters.Add(ssnParam);
-        }
-
-        // now read the data
-        var stopwatch = Stopwatch.StartNew();
-
-        SqlDataReader data;
-
-        Console.WriteLine("Performing Query");
-        try
+        for (int j = 0; j < 2; j++)
         {
-            data = sqlCommand.ExecuteReader();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return;
-        }
+            // from here on is real database work
+            SqlCommand sqlCommand;
 
-        stopwatch.Stop();
-        Console.WriteLine($"Query took {stopwatch.ElapsedMilliseconds}ms");
-
-        // get column headers
-        Console.WriteLine("Fetching Data");
-        for (int i = 0; i < data.FieldCount; i++)
-            Console.Write(data.GetName(i) + ", ");
-
-        Console.WriteLine();
-
-        // get data
-        while (data.Read())
-        {
-            for (int i = 0; i < data.FieldCount; i++)
+            Console.WriteLine("Building Query");
+            if (useAlwaysEncrypted == false)
             {
-                var value = data.GetValue(i);
-                var type = data.GetFieldType(i);
+                string query =
+                    "SELECT Top 10 SSN, Salary, LastName, FirstName " +
+                    "FROM Employees";
 
-                if (value is not null)
-                {
-                    // if the data is a byte array (ie; ciphertext) dump the hex string
-                    if (type == typeof(byte[]))
-#pragma warning disable CS8604 // Possible null reference argument. There *IS* a check two lines up!
-                        value = ByteArrayToHexString(value as byte[], 16);
-#pragma warning restore CS8604 
-                } 
-                else
-                {
-                    value = "?";
-                }
-
-                Console.Write(value + ", ");
+                sqlCommand = new(query, conn);
             }
-            Console.WriteLine();
+            else
+            {
+                // query to find minimum salary with specifical SSN
+                string query =
+                    "SELECT [SSN], [Salary], [LastName], [FirstName] " +
+                    "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
+                    "ORDER by [Salary] DESC";
+
+                sqlCommand = conn.CreateCommand();
+                sqlCommand.CommandText = query;
+
+                // we MUST use parameters
+                SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
+                    Value = 50_000
+                };
+                sqlCommand.Parameters.Add(minSalaryParam);
+
+                SqlParameter ssnParam = new("@SSN", SqlDbType.Char) {
+                    Value = "6%"
+                };
+                sqlCommand.Parameters.Add(ssnParam);
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+
+            Console.WriteLine("Performing Query");
+            SqlDataReader data;
+            try
+            {
+                data = sqlCommand.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return;
+            }
+
+            stopwatch.Stop();
+            Console.WriteLine($"Query took {stopwatch.ElapsedMilliseconds}ms");
+
+            DumpData(data);
+            data.Close();
         }
     }
 }
