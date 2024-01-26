@@ -10,8 +10,8 @@
 //*********************************************************
 
 using System.Text;
+using Azure.Core;
 using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
 
@@ -30,7 +30,6 @@ partial class Program
         return hex.ToString()[..max];
     }
 
-
     // Build SQL Connection String 
     public static string GetSQLConnectionString(bool useAE = true)
     {
@@ -44,8 +43,26 @@ partial class Program
         return sqlConn;
     }
 
+    // Login to Azure and get token to Azure SQL DB OAuth2 token
+    public static (TokenCredential? tok, string? oauth2Sql) LoginToAure()
+    {
+        try
+        {
+            var credential = new AzureCliCredential();
+            var oauth2TokenSql = credential.GetToken(
+                    new TokenRequestContext(
+                        ["https://database.windows.net/.default"])).Token;
+            return (credential, oauth2TokenSql);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return (null, null);
+        }
+    }
+
     // We need to register the use of AKV for AE
-    public static void RegisterAkvForAe(DefaultAzureCredential cred)
+    public static void RegisterAkvForAe(TokenCredential cred)
     {
         var akvAeProvider = new SqlColumnEncryptionAzureKeyVaultProvider(cred);
         SqlConnection.RegisterColumnEncryptionKeyStoreProviders(

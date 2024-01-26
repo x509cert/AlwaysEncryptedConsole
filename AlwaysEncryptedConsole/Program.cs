@@ -10,8 +10,6 @@
 //*********************************************************
 
 using Azure.Core;
-using Azure.Core.Diagnostics;
-using Azure.Identity;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics;
@@ -25,30 +23,11 @@ partial class Program
 
         Console.WriteLine($"Cold Start\nUse Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
-        // login to Azure and get token to Azure SQL DB OAuth2 token
+        // login to Azure and get Azure SQL DB OAuth2 token
         Console.WriteLine("Connecting to Azure");
-
-        // Setup a listener to monitor logged events.
-        // This is in case of MSAL errors, you can see what happened
-        // Sometimes DefaultAzureCredential fails, learn more at:
-        // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/identity/Azure.Identity/TROUBLESHOOTING.md#troubleshoot-defaultazurecredential-authentication-issues
-        //using AzureEventSourceListener listener = AzureEventSourceListener.CreateConsoleLogger();
-
-        DefaultAzureCredential credential;
-        string oauth2TokenSql;
-
-        try
-        {
-            credential = new DefaultAzureCredential();
-            oauth2TokenSql = credential.GetToken(
-                    new TokenRequestContext(
-                        ["https://database.windows.net/.default"])).Token;
-        } 
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return;
-        }
+        (TokenCredential? credential, string? oauth2TokenSql) = LoginToAure();
+        if (credential is null || oauth2TokenSql is null)
+            throw new ArgumentNullException("Unable to login to Azure");
 
         Console.WriteLine("Connecting to Azure SQL DB");
 
@@ -86,14 +65,12 @@ partial class Program
             sqlCommand.CommandText = query;
 
             // we MUST use parameters
-            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money)
-            {
+            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
                 Value = 50_000
             };
             sqlCommand.Parameters.Add(minSalaryParam);
 
-            SqlParameter ssnParam = new("@SSN", SqlDbType.Char)
-            {
+            SqlParameter ssnParam = new("@SSN", SqlDbType.Char) {
                 Value = "6%"
             };
             sqlCommand.Parameters.Add(ssnParam);
