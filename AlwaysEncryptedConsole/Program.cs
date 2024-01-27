@@ -33,7 +33,8 @@ partial class Program
 
         // Connect to Azure SQL DB using EntraID AuthN rather than Windows or SQL AuthN
         var connectionString = GetSQLConnectionString(useAlwaysEncrypted);
-        using SqlConnection conn = new(connectionString) {
+        using SqlConnection conn = new(connectionString)
+        {
             AccessToken = oauth2TokenSql
         };
         conn.Open();
@@ -42,62 +43,84 @@ partial class Program
         if (useAlwaysEncrypted)
             RegisterAkvForAe(credential);
 
-        for (int j = 0; j < 2; j++)
+        // from here on is real database work
+        SqlCommand sqlCommand;
+
+        if (useAlwaysEncrypted == false)
         {
-            // from here on is real database work
-            SqlCommand sqlCommand;
+            string query =
+                "SELECT Top 10 SSN, Salary, LastName, FirstName " +
+                "FROM Employees";
 
-            Console.WriteLine("Building Query");
-            if (useAlwaysEncrypted == false)
-            {
-                string query =
-                    "SELECT Top 10 SSN, Salary, LastName, FirstName " +
-                    "FROM Employees";
-
-                sqlCommand = new(query, conn);
-            }
-            else
-            {
-                // query to find minimum salary with specifical SSN
-                string query =
-                    "SELECT [SSN], [Salary], [LastName], [FirstName] " +
-                    "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
-                    "ORDER by [Salary] DESC";
-
-                sqlCommand = conn.CreateCommand();
-                sqlCommand.CommandText = query;
-
-                // we MUST use parameters
-                SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
-                    Value = 50_000
-                };
-                sqlCommand.Parameters.Add(minSalaryParam);
-
-                SqlParameter ssnParam = new("@SSN", SqlDbType.Char) {
-                    Value = "6%"
-                };
-                sqlCommand.Parameters.Add(ssnParam);
-            }
-
-            var stopwatch = Stopwatch.StartNew();
-
-            Console.WriteLine("Performing Query");
-            SqlDataReader data;
-            try
-            {
-                data = sqlCommand.ExecuteReader();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return;
-            }
-
-            stopwatch.Stop();
-            Console.WriteLine($"Query took {stopwatch.ElapsedMilliseconds}ms");
-
-            DumpData(data);
-            data.Close();
+            sqlCommand = new(query, conn);
+            DoQuery(sqlCommand);
         }
+        else
+        {
+            ///////////////////////////////////////////////////
+            // QUERY #1: Find minimum salary with specific SSN
+            string query1 =
+                "SELECT [SSN], [Salary], [LastName], [FirstName] " +
+                "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
+                "ORDER by [Salary] DESC";
+
+            sqlCommand = new(query1, conn);
+
+            // MUST use parameters
+            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money)
+            {
+                Value = 50_000
+            };
+            sqlCommand.Parameters.Add(minSalaryParam);
+
+            SqlParameter ssnParam = new("@SSN", SqlDbType.Char)
+            {
+                Value = "6%"
+            };
+            sqlCommand.Parameters.Add(ssnParam);
+
+            DoQuery(sqlCommand);
+
+            ///////////////////////////////////////////////////
+            // QUERY #2: sproc to find salary range
+            string query2 = "EXEC usp_GetSalary @MinSalary = @MinSalaryRange, @MaxSalary = @MaxSalaryRange";
+
+            sqlCommand = new(query2, conn);
+
+            SqlParameter minSalaryRange = new("@MinSalaryRange", SqlDbType.Money) {
+                Value = 40_000
+            };
+            sqlCommand.Parameters.Add(minSalaryRange);
+
+            SqlParameter maxSalaryRange = new("@MaxSalaryRange", SqlDbType.Money) {
+                Value = 42_000
+            };
+            sqlCommand.Parameters.Add(maxSalaryRange);
+
+            DoQuery(sqlCommand);
+        }
+    }
+    
+    static void DoQuery(SqlCommand sqlCommand)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        Console.WriteLine("\nPerforming Query");
+        SqlDataReader data;
+        try
+        {
+            data = sqlCommand.ExecuteReader();
+        }
+        catch (SqlException ex)
+        {
+            Console.WriteLine(ex.Message);
+            return;
+        }
+
+        stopwatch.Stop();
+        Console.WriteLine($"Query took [{stopwatch.ElapsedMilliseconds}ms]");
+
+        DumpData(data);
+        data.Close();
     }
 }
