@@ -18,12 +18,12 @@ partial class Program
 {
     static void Main()
     {
-        // flip this to true or false to use or not use AE
+        // Flip this to true or false to use or not use AE
         bool useAlwaysEncrypted = true;
 
         Console.WriteLine($"Cold Start\nUse Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
-        // login to Azure and get Azure SQL DB OAuth2 token
+        // Login to Azure and get Azure SQL DB OAuth2 token
         Console.WriteLine("Connecting to Azure");
         (TokenCredential? credential, string? oauth2TokenSql) = LoginToAure();
         if (credential is null || oauth2TokenSql is null)
@@ -39,11 +39,11 @@ partial class Program
         };
         conn.Open();
 
-        // Register the enclave attestation URL
+        // Register the enclave attestation URL, do this once on app startup
         if (useAlwaysEncrypted)
             RegisterAkvForAe(credential);
 
-        // from here on is real database work
+        // From here on is real database work
         SqlCommand sqlCommand;
 
         if (useAlwaysEncrypted == false)
@@ -67,14 +67,12 @@ partial class Program
             sqlCommand = new(query1, conn);
 
             // MUST use parameters
-            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money)
-            {
+            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
                 Value = 50_000
             };
             sqlCommand.Parameters.Add(minSalaryParam);
 
-            SqlParameter ssnParam = new("@SSN", SqlDbType.Char)
-            {
+            SqlParameter ssnParam = new("@SSN", SqlDbType.Char) {
                 Value = "6%"
             };
             sqlCommand.Parameters.Add(ssnParam);

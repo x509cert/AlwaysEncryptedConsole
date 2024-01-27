@@ -20,23 +20,24 @@ partial class Program
     private const string _EnvVar = "ConnectContosoHR";
 
     // Helper function to dump binary data
-    // can truncate the output if needed
-    public static string ByteArrayToHexString(byte[] byteArray, int max)
+    // Can truncate the output if needed
+    public static string ByteArrayToHexString(byte[] byteArray, int maxLen = 16)
     {
-        StringBuilder hex = new StringBuilder(byteArray.Length * 2);
+        StringBuilder hex = new(byteArray.Length * 2);
         foreach (byte b in byteArray)
             hex.AppendFormat("{0:x2}", b);
 
-        return hex.ToString()[..max];
+        return hex.ToString()[..maxLen];
     }
 
     // Build SQL Connection String 
     public static string GetSQLConnectionString(bool useAE = true)
     {
-        string? sqlConn = Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process) 
-                          ?? throw new ArgumentException($"Missing environment variable, {_EnvVar}");
+        string? sqlConn = 
+            Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process) 
+            ?? throw new ArgumentException($"Missing environment variable, {_EnvVar}");
 
-        // add AE settings if needed
+        // Add AE settings if needed
         if (useAE)
             sqlConn += ";Column Encryption Setting=Enabled;Attestation Protocol=None;";
 

@@ -17,10 +17,11 @@ partial class Program
             for (int i = 0; i < data.FieldCount; i++)
             {
                 var value = data.GetValue(i);
-                var type = data.GetFieldType(i);
 
                 if (value is not null)
                 {
+                    var type = data.GetFieldType(i);
+
                     // if the data is a byte array (ie; ciphertext) dump the hex string
                     if (type == typeof(byte[]))
 #pragma warning disable CS8604 // Possible null reference argument. There *IS* a check two lines up!
