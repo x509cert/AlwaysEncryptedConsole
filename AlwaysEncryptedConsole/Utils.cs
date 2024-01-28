@@ -17,8 +17,6 @@ using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
 
 partial class Program
 {
-    private const string _EnvVar = "ConnectContosoHR";
-
     // Helper function to dump binary data
     // Can truncate the output if needed
     public static string ByteArrayToHexString(byte[] byteArray, int maxLen = 16)
@@ -33,6 +31,8 @@ partial class Program
     // Build SQL Connection String 
     public static string GetSQLConnectionString(bool useAE = true)
     {
+        const string _EnvVar = "ConnectContosoHR";
+
         string? sqlConn = 
             Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process) 
             ?? throw new ArgumentException($"Missing environment variable, {_EnvVar}");
