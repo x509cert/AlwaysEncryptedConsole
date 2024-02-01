@@ -1,6 +1,6 @@
 This is a sample C# client app used to demo the coding aspects of Always Encrypted with VBS enclaves using the ContosoHR Database. The raw SQL files are here: https://github.com/microsoft/sql-server-samples/blob/master/samples/features/security/always-encrypted-with-secure-enclaves/azure-sql-database-vbs/setup/PopulateDatabase.sql and the entire repo is here https://github.com/microsoft/sql-server-samples/tree/master/samples/features/security/always-encrypted-with-secure-enclaves/azure-sql-database-vbs. 
 
-To setup, you need an environment variable named ConnectContosoHR that is the connection string to your Azure SQL Instance. eg; `Server=tcp:XXXXenclavedemoserver.database.windows.net;Database=ContosoHR;`
+To setup, you need an environment variable named ConnectContosoHR that is the connection string to your Azure SQL Instance. eg; `Server=tcp:XXXXXXXserver.database.windows.net;Database=ContosoHR;`
 
 Don't put the enclave-specific settings, these are added by the code so you can demo with- and without-AE.
 
