@@ -109,7 +109,8 @@ partial class Program
     {
         var stopwatch = Stopwatch.StartNew();
 
-        Console.WriteLine("\nPerforming Query");
+        Console.WriteLine($"\nPerforming Query\n{sqlCommand.CommandText}");
+        
         SqlDataReader data;
         try
         {
