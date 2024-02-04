@@ -103,7 +103,7 @@ partial class Program
     // Perform the actual query and gather stats
     // The time is the round trip time to and from the database
     // This will be higher than the actual query time due to network latency
-    // Also note, the first query is slower due to lots of moving parts
+    // IMPORTANT: the first query is slower due to lots of moving parts
     // getting loaded, authN, AuthZ, etc.
     static void DoQuery(SqlCommand sqlCommand)
     {
