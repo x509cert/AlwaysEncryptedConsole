@@ -19,6 +19,7 @@ partial class Program
     static void Main()
     {
         // Flip this to true or false to use or not use AE
+        // If false, you will only see the SSN and Salary columns as ciphertext
         bool useAlwaysEncrypted = true;
 
         Console.WriteLine($"Cold Start\nUse Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
@@ -99,6 +100,11 @@ partial class Program
         }
     }
     
+    // Perform the actual query and gather stats
+    // The time is the round trip time to and from the database
+    // This will be higher than the actual query time due to network latency
+    // Also note, the first query is slower due to lots of moving parts
+    // getting loaded, authN, AuthZ, etc.
     static void DoQuery(SqlCommand sqlCommand)
     {
         var stopwatch = Stopwatch.StartNew();
