@@ -1,7 +1,19 @@
-﻿using Microsoft.Data.SqlClient;
+﻿//********************************************************* 
+// Copyright (c) Microsoft. All rights reserved. 
+// This code is licensed under the MIT License (MIT). 
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF 
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY 
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR 
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT. 
+// 
+// Author: Michael Howard, Azure Data Security
+//*********************************************************
+
+using Microsoft.Data.SqlClient;
 
 partial class Program
 {
+    // Displays rows and  cols from a SqlDataReader query result
     public static void DumpData(SqlDataReader data)
     {
         // get column headers
@@ -22,9 +34,11 @@ partial class Program
                 {
                     var type = data.GetFieldType(i);
 
-                    // if the data is a byte array (ie; ciphertext) dump the hex string
+                    // if the data is a byte array (ie; ciphertext)
+                    // dump the first 16 bytes of hex string
                     if (type == typeof(byte[]))
-#pragma warning disable CS8604 // Possible null reference argument. There *IS* a check two lines up!
+// Possible null reference argument. There *IS* a check two lines up!
+#pragma warning disable CS8604 
                         value = ByteArrayToHexString(value as byte[], 16);
 #pragma warning restore CS8604 
                 }
