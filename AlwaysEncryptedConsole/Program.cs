@@ -9,6 +9,10 @@
 // Author: Michael Howard, Azure Data Security
 //*********************************************************
 
+//*********************************************************
+// Demo Steps
+// Run, as-is
+
 using Azure.Core;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -19,7 +23,7 @@ partial class Program
     static void Main()
     {
         // Flip this to true or false to use or not use AE
-        bool useAlwaysEncrypted = true;
+        bool useAlwaysEncrypted = false;
 
         Console.WriteLine($"Cold Start\nUse Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
@@ -57,14 +61,22 @@ partial class Program
         }
         else
         {
+
             ///////////////////////////////////////////////////
-            // QUERY #1: Find minimum salary with specific SSN
-            string query1 =
+            // QUERY #1: Get row count
+            string query1 = "SELECT count(*) FROM Employees";
+
+            sqlCommand = new(query1, conn);
+            DoQuery(sqlCommand);
+
+            ///////////////////////////////////////////////////
+            // QUERY #2: Find minimum salary with specific SSN
+            string query2 =
                 "SELECT [SSN], [Salary], [LastName], [FirstName] " +
                 "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
                 "ORDER by [Salary] DESC";
 
-            sqlCommand = new(query1, conn);
+            sqlCommand = new(query2, conn);
 
             // MUST use parameters
             SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
@@ -81,9 +93,9 @@ partial class Program
 
             ///////////////////////////////////////////////////
             // QUERY #2: sproc to find salary range
-            string query2 = "EXEC usp_GetSalary @MinSalary = @MinSalaryRange, @MaxSalary = @MaxSalaryRange";
+            string query3 = "EXEC usp_GetSalary @MinSalary = @MinSalaryRange, @MaxSalary = @MaxSalaryRange";
 
-            sqlCommand = new(query2, conn);
+            sqlCommand = new(query3, conn);
 
             SqlParameter minSalaryRange = new("@MinSalaryRange", SqlDbType.Money) {
                 Value = 40_000
