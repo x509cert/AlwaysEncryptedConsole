@@ -11,7 +11,21 @@
 
 //*********************************************************
 // Demo Steps
-// Run, as-is
+// Step 1
+// Run, as-is, AE is set to false,
+// and the code will return ciphertext
+// 
+// Step 2
+// Set useAlwaysEncrypted to true (line 42)
+// Re-run code, but will fail because of no AKV
+//
+// Step 3
+// Uncomment the lines that enable AKV and AE (lines 64, 65)
+// Re-run code, will fail because of no params
+//
+// Step 4
+// Set testWithNoParam = false on line 84
+// Re-run. At this point everything should work.
 
 using Azure.Core;
 using Microsoft.Data.SqlClient;
@@ -24,7 +38,8 @@ partial class Program
     {
         // Flip this to true or false to use or not use AE
         // If false, you will only see the SSN and Salary columns as ciphertext
-        bool useAlwaysEncrypted = true;
+        // Demo step 2 set this to true
+        bool useAlwaysEncrypted = false;
 
         Console.WriteLine($"Cold Start\nUse Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
@@ -45,8 +60,9 @@ partial class Program
         conn.Open();
 
         // Register the enclave attestation URL, do this once on app startup
-        if (useAlwaysEncrypted)
-            RegisterAkvForAe(credential);
+        // Uncomment these two lines for demo step 3
+        //if (useAlwaysEncrypted)
+        //    RegisterAkvForAe(credential);
 
         // From here on is real database work
         SqlCommand sqlCommand;
@@ -62,13 +78,16 @@ partial class Program
         }
         else
         {
-
             ///////////////////////////////////////////////////
-            // QUERY #1: Get row count
-            string query1 = "SELECT count(*) FROM Employees";
-
-            sqlCommand = new(query1, conn);
-            DoQuery(sqlCommand);
+            // QUERY #1: Get count based on employee salary 
+            // Demo step 4 - keep as is, but after demo set to false
+            bool testWithNoParam = true;
+            if (testWithNoParam == true)
+            {
+                string query1 = "SELECT count(*) FROM Employees where [Salary] > 50_000";
+                sqlCommand = new(query1, conn);
+                DoQuery(sqlCommand);
+            }
 
             ///////////////////////////////////////////////////
             // QUERY #2: Find minimum salary with specific SSN
