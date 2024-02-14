@@ -37,6 +37,8 @@ partial class Program
             Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process) 
             ?? throw new ArgumentException($"Missing environment variable, {_EnvVar}");
 
+        sqlConn = "Server=tcp:vbsenclavedemoserver.database.windows.net;Database=ContosoHR;";
+
         // Add AE settings if needed
         // You could also use a connection string builder, SqlConnectionStringBuilder 
         if (useAE)

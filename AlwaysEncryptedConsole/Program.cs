@@ -84,7 +84,7 @@ partial class Program
             bool testWithNoParam = true;
             if (testWithNoParam == true)
             {
-                string query1 = "SELECT count(*) FROM Employees where [Salary] > 50_000";
+                string query1 = "SELECT count(*) FROM Employees where [Salary] > 50000";
                 sqlCommand = new(query1, conn);
                 DoQuery(sqlCommand);
             }
@@ -142,7 +142,7 @@ partial class Program
 
         Console.WriteLine($"\nPerforming Query\n{sqlCommand.CommandText}");
         
-        SqlDataReader data;
+        SqlDataReader? data = null;
         try
         {
             data = sqlCommand.ExecuteReader();
@@ -150,7 +150,7 @@ partial class Program
         catch (SqlException ex)
         {
             Console.WriteLine(ex.Message);
-            return;
+            Environment.Exit(-1);
         }
 
         stopwatch.Stop();

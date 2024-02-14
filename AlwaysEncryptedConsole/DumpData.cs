@@ -14,8 +14,11 @@ using Microsoft.Data.SqlClient;
 partial class Program
 {
     // Displays rows and  cols from a SqlDataReader query result
-    public static void DumpData(SqlDataReader data)
+    public static void DumpData(SqlDataReader? data)
     {
+        if (data == null)
+            Console.WriteLine("No data");
+
         // get column headers
         Console.WriteLine("Fetching Data");
         for (int i = 0; i < data.FieldCount; i++)
