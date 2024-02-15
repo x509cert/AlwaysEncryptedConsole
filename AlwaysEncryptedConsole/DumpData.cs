@@ -16,8 +16,11 @@ partial class Program
     // Displays rows and  cols from a SqlDataReader query result
     public static void DumpData(SqlDataReader? data)
     {
-        if (data == null)
+        if (data is null)
+        {
             Console.WriteLine("No data");
+            return;
+        }
 
         // get column headers
         Console.WriteLine("Fetching Data");
