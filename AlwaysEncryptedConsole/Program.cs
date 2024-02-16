@@ -168,7 +168,7 @@ partial class Program
         }
 
         stopwatch.Stop();
-        Console.WriteLine($"Query took [{stopwatch.ElapsedMilliseconds}ms]");
+        Console.WriteLine($"Network Roundtrip + Query took [{stopwatch.ElapsedMilliseconds}ms]");
 
         DumpData(data);
         data.Close();
