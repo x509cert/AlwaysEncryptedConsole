@@ -16,16 +16,18 @@
 // and the code will return ciphertext
 // 
 // Step 2
-// Set useAlwaysEncrypted to true (line 42)
-// Re-run code, but will fail because of no AKV
-//
-// Step 3
-// Uncomment the lines that enable AKV and AE (lines 64, 65)
+// Set useAlwaysEncrypted to true (line 41)
 // Re-run code, will fail because of no params
 //
+// Step 3
+// Set testWithParams to true (line 45)
+// Re-run code, but will fail because of no AKV
+//
 // Step 4
-// Set testWithNoParam = false on line 84
+// Set registerAkv4Ae to true (line 48)
 // Re-run. At this point everything should work.
+// Two queries, the first is slow because intial authn/authz/column metadata
+// Second is much faster
 
 using Azure.Core;
 using Microsoft.Data.SqlClient;
@@ -36,10 +38,19 @@ partial class Program
 {
     static void Main()
     {
-        // Flip this to true or false to use or not use AE
-        // If false, you will only see the SSN and Salary columns as ciphertext
+        // START all these flags should be false
+
+        // Demo step 1 will not use AE,
+        // and you will only see the SSN and Salary columns as ciphertext
+
         // Demo step 2 set this to true
         bool useAlwaysEncrypted = false;
+
+        // Demo step 3 set this to true
+        bool testWithParams = false;
+
+        // Demo step 4 set this to true
+        bool registerAkv4Ae = false;
 
         Console.WriteLine($"Cold Start\nUse Always Encrypted with Enclaves? {(useAlwaysEncrypted ? "Yes" : "No")}");
 
@@ -60,9 +71,8 @@ partial class Program
         conn.Open();
 
         // Register the enclave attestation URL, do this once on app startup
-        // Uncomment these two lines for demo step 3
-        //if (useAlwaysEncrypted)
-        //    RegisterAkvForAe(credential);
+        if (useAlwaysEncrypted && registerAkv4Ae)
+            RegisterAkvForAe(credential);
 
         // From here on is real database work
         SqlCommand sqlCommand;
@@ -81,8 +91,7 @@ partial class Program
             ///////////////////////////////////////////////////
             // QUERY #1: Get count based on employee salary 
             // Demo step 4 - keep as is, but after demo set to false
-            bool testWithNoParam = true;
-            if (testWithNoParam == true)
+            if (testWithParams == false)
             {
                 string query1 = "SELECT count(*) FROM Employees where [Salary] > 50000";
                 sqlCommand = new(query1, conn);
@@ -148,6 +157,11 @@ partial class Program
             data = sqlCommand.ExecuteReader();
         }
         catch (SqlException ex)
+        {
+            Console.WriteLine(ex.Message);
+            Environment.Exit(-1);
+        }
+        catch (System.InvalidOperationException ex)
         {
             Console.WriteLine(ex.Message);
             Environment.Exit(-1);
