@@ -16,15 +16,15 @@
 // and the code will return ciphertext
 // 
 // Step 2
-// Set useAlwaysEncrypted to true (line 41)
+// Set useAlwaysEncrypted to true (line 47)
 // Re-run code, will fail because of no params
 //
 // Step 3
-// Set testWithParams to true (line 45)
+// Set testWithParams to true (line 50)
 // Re-run code, but will fail because of no AKV
 //
 // Step 4
-// Set registerAkv4Ae to true (line 48)
+// Set registerAkv4Ae to true (line 53)
 // Re-run. At this point everything should work.
 // Two queries, the first is slow because intial authn/authz/column metadata
 // Second is much faster
