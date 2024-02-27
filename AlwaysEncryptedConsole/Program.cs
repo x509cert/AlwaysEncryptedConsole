@@ -108,12 +108,14 @@ partial class Program
             sqlCommand = new(query2, conn);
 
             // MUST use parameters
-            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money) {
+            SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money)
+            {
                 Value = 50_000
             };
             sqlCommand.Parameters.Add(minSalaryParam);
 
-            SqlParameter ssnParam = new("@SSN", SqlDbType.Char) {
+            SqlParameter ssnParam = new("@SSN", SqlDbType.Char)
+            {
                 Value = "6%"
             };
             sqlCommand.Parameters.Add(ssnParam);
@@ -126,12 +128,14 @@ partial class Program
 
             sqlCommand = new(query3, conn);
 
-            SqlParameter minSalaryRange = new("@MinSalaryRange", SqlDbType.Money) {
+            SqlParameter minSalaryRange = new("@MinSalaryRange", SqlDbType.Money)
+            {
                 Value = 40_000
             };
             sqlCommand.Parameters.Add(minSalaryRange);
 
-            SqlParameter maxSalaryRange = new("@MaxSalaryRange", SqlDbType.Money) {
+            SqlParameter maxSalaryRange = new("@MaxSalaryRange", SqlDbType.Money)
+            {
                 Value = 42_000
             };
             sqlCommand.Parameters.Add(maxSalaryRange);
@@ -139,7 +143,7 @@ partial class Program
             DoQuery(sqlCommand);
         }
     }
-    
+
     // Perform the actual query and gather stats
     // The time is the round trip time to and from the database
     // This will be higher than the actual query time due to network latency
@@ -150,7 +154,7 @@ partial class Program
         var stopwatch = Stopwatch.StartNew();
 
         Console.WriteLine($"\nPerforming Query\n{sqlCommand.CommandText}");
-        
+
         SqlDataReader? data = null;
         try
         {

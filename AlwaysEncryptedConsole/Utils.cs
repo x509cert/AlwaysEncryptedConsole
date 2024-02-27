@@ -9,13 +9,13 @@
 // Author: Michael Howard, Azure Data Security
 //*********************************************************
 
-using System.Text;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider;
+using System.Text;
 
-partial class Program
+sealed partial class Program
 {
     // Helper function to dump binary data
     // Can truncate the output if needed
@@ -23,7 +23,7 @@ partial class Program
     {
         StringBuilder hex = new(byteArray.Length * 2);
         foreach (byte b in byteArray)
-            hex.AppendFormat("{0:x2}", b);
+            hex.AppendFormat($"{b:x2}");
 
         return hex.ToString()[..maxLen];
     }
@@ -33,8 +33,8 @@ partial class Program
     {
         const string _EnvVar = "ConnectContosoHR";
 
-        string? sqlConn = 
-            Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process) 
+        string? sqlConn =
+            Environment.GetEnvironmentVariable(_EnvVar, EnvironmentVariableTarget.Process)
             ?? throw new ArgumentException($"Missing environment variable, {_EnvVar}");
 
         // Add AE settings if needed
@@ -68,7 +68,8 @@ partial class Program
         }
     }
 
-    // We need to register the use of AKV for AE, do these once per app on startup
+    // We need to register the use of AKV for AE, do this once per app on startup
+    // The client drivers handles certstore by default, but not AKV, to reduce code bloat
     public static void RegisterAkvForAe(TokenCredential cred)
     {
         var akvAeProvider = new SqlColumnEncryptionAzureKeyVaultProvider(cred);

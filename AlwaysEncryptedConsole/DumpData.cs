@@ -43,8 +43,8 @@ partial class Program
                     // if the data is a byte array (ie; ciphertext)
                     // dump the first 16 bytes of hex string
                     if (type == typeof(byte[]))
-// Possible null reference argument. There *IS* a check two lines up!
-#pragma warning disable CS8604 
+                        // Possible null reference argument. There *IS* a check two lines up!
+#pragma warning disable CS8604
                         value = ByteArrayToHexString(value as byte[], 16);
 #pragma warning restore CS8604 
                 }
