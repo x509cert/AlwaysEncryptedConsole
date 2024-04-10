@@ -53,7 +53,8 @@ partial class Program
                     value = "?";
                 }
 
-                Console.Write(value + ", ");
+                Console.Write(value.ToString().Trim() + ", ");
+
             }
             Console.WriteLine();
         }

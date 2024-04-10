@@ -81,7 +81,7 @@ partial class Program
         {
             string query =
                 "SELECT Top 10 SSN, Salary, LastName, FirstName " +
-                "FROM Employees";
+                "FROM [HR].[Employees]";
 
             sqlCommand = new(query, conn);
             DoQuery(sqlCommand);
@@ -93,7 +93,7 @@ partial class Program
             // Demo step 4 - keep as is, but after demo set to false
             if (testWithParams == false)
             {
-                string query1 = "SELECT count(*) FROM Employees where [Salary] > 50000";
+                string query1 = "SELECT count(*) FROM [HR].[Employees] where [Salary] > 150000";
                 sqlCommand = new(query1, conn);
                 DoQuery(sqlCommand);
             }
@@ -102,7 +102,7 @@ partial class Program
             // QUERY #2: Find minimum salary with specific SSN
             string query2 =
                 "SELECT [SSN], [Salary], [LastName], [FirstName] " +
-                "FROM Employees WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
+                "FROM [HR].[Employees] WHERE [Salary] > @MinSalary AND [SSN] LIKE @SSN " +
                 "ORDER by [Salary] DESC";
 
             sqlCommand = new(query2, conn);
@@ -110,7 +110,7 @@ partial class Program
             // MUST use parameters
             SqlParameter minSalaryParam = new("@MinSalary", SqlDbType.Money)
             {
-                Value = 50_000
+                Value = 240_000
             };
             sqlCommand.Parameters.Add(minSalaryParam);
 
@@ -130,13 +130,13 @@ partial class Program
 
             SqlParameter minSalaryRange = new("@MinSalaryRange", SqlDbType.Money)
             {
-                Value = 40_000
+                Value = 60_000
             };
             sqlCommand.Parameters.Add(minSalaryRange);
 
             SqlParameter maxSalaryRange = new("@MaxSalaryRange", SqlDbType.Money)
             {
-                Value = 42_000
+                Value = 62_000
             };
             sqlCommand.Parameters.Add(maxSalaryRange);
 
